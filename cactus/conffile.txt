@@ -1,0 +1,7 @@
+(((ndama:0.00195,(angus:0.00174,hereford:0.00129):0.00040):0.00035,ankole:0.00323):0.00037,brahman:0.00243);
+
+angus ./Data/angusCHR.fasta
+hereford ./Data/herefordCHR.fasta
+ndama ./Data/ndamaCHR.fasta
+ankole ./Data/ankoleCHR.fasta
+brahman ./Data/brahmanCHR.fasta
