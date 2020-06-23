@@ -1,0 +1,23 @@
+Bootstrap: docker
+From: ubuntu:18.04
+
+%labels
+    Version v1.24.0
+    MyLabel hal2vg
+
+%post
+    # update system and install dependencies not present in vg image
+    apt-get -qq update && apt-get -qq install -y cmake build-essential git
+    apt-get -qq install -y build-essential git cmake pkg-config libncurses-dev libbz2-dev  \
+                     protobuf-compiler libprotoc-dev libprotobuf-dev libjansson-dev \
+                     automake libtool jq bc rs curl unzip redland-utils \
+                     librdf-dev bison flex gawk lzma-dev liblzma-dev liblz4-dev \
+                     libffi-dev libcairo-dev
+    git clone --recursive https://github.com/vgteam/vg.git && \
+        cd vg && \
+        . ./source_me.sh && \
+        make && \ 
+        make install
+
+%environment
+    export PATH=$PATH:/hal2vg:/hal2vg/deps/hal/bin:$PATH

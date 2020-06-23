@@ -1,0 +1,16 @@
+Bootstrap: docker
+From: quay.io/vgteam/vg:latest
+
+%labels
+    Version v.124.0
+    MyLabel hal2vg
+
+%post
+    # update system and install dependencies not present in vg image
+    apt-get -qq update && apt-get -qq install -y libhdf5-dev cmake build-essential python3-dev python3-pip git
+    git clone https://github.com/glennhickey/hal2vg.git --recursive && 
+        cd /hal2vg && \
+        make 
+
+%environment
+    export PATH=$PATH:/hal2vg:/hal2vg/deps/hal/bin:$PATH
