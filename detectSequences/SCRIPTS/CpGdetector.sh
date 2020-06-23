@@ -1,0 +1,30 @@
+#!/bin/sh
+. /etc/profile.d/modules.sh
+module load anaconda
+module load R
+module load roslin/perl/5.26.1
+module load roslin/samtools
+source activate DataPy
+
+# Some pre-defined paths (less arguments from command line...)
+export PATH=$PATH:/exports/cmvm/eddie/eb/groups/prendergast_grp/Andrea/CpGProD/
+
+# Get otions from command line.
+while getopts ":f:o:n" opt; do
+  case $opt in
+    f) FASTA=${OPTARG};;
+    o) OUTPUT=${OPTARG};;
+    n) NVERSION=${OPTARG};;
+  esac
+done
+
+# Create temporary folder if not exists
+if [ ! -e ${OUTPUT} ]; then
+        mkdir ${OUTPUT}
+fi
+
+# Scanning for motifs into the genome
+if [ ! -e ${OUTPUT}/CPG ]; then mkdir ${OUTPUT}/CPG; fi
+CpGProD ${FASTA} \
+        ${OUTPUT}/CPG/CPGPROD.out \
+        -html ${OUTPUT}/CPG/CPGPROD.html
