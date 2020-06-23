@@ -21,7 +21,7 @@ if [ ! -e SEQUENCE_STATISTICS ]; then mkdir SEQUENCE_STATISTICS; fi
 # Characterise CpG islands
 echo "Getting CpG islands in ${genome}"
 if [ ! -e SEQUENCE_STATISTICS/${genome} ]; then mkdir SEQUENCE_STATISTICS/${genome}; fi
-./SCRIPTS/CpGdetector.sh -f SEQUENCES/${genome}/${genome}.specific.fasta -o SEQUENCE_STATISTICS/${genome} 
+./SCRIPTS/CpGdetector.sh -f $PWD/SEQUENCES/${i}/${i}.fasta -o SEQUENCE_STATISTICS/${i} -b $PWD/SEQUENCES/${i}/${i}.bed
 
 # Get Predicted ORF
 echo "Getting ORF in ${genome}"
