@@ -5,6 +5,7 @@ module load anaconda
 module load R
 module load roslin/perl/5.26.1
 module load roslin/samtools
+module load roslin/bedtools
 source activate DataPy
 
 # Some pre-defined paths (less arguments from command line...)
@@ -30,3 +31,7 @@ fi
 
 # Scanning for motifs into the genome
 findMotifsGenome.pl $BED $GENOME ${OUTPUT}/MOTIFS -mask -mset vertebrates 
+scanMotifGenomeWide.pl /exports/cmvm/eddie/eb/groups/prendergast_grp/Andrea/HOMER/data/knownTFs/vertebrates/known.motifs \
+                        $GENOME \
+                        -bed -int -keepAll > ${OUTPUT}/MOTIFS/All.bed
+bedtools intersect -a ${OUTPUT}/MOTIFS/All.bed -b $BED -wa >  ${OUTPUT}/MOTIFS/SPECIFIC.bed

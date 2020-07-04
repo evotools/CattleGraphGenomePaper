@@ -15,7 +15,7 @@ while getopts ":f:o:b:n" opt; do
   case $opt in
     f) FASTA=${OPTARG};;
     o) OUTPUT=${OPTARG};;
-    B) BEDFILE=${OPTARG};;
+    b) BEDFILE=${OPTARG};;
     n) NVERSION=${OPTARG};;
   esac
 done
@@ -30,5 +30,6 @@ if [ ! -e ${OUTPUT}/CPG ]; then mkdir ${OUTPUT}/CPG; fi
 CpGProD ${FASTA} \
         ${OUTPUT}/CPG/CPGPROD.out \
         -html ${OUTPUT}/CPG/CPGPROD.html
-python -c "import sys;print(''.join([line for line in open(sys.argv[1]) if len(line.strip().split()) > 2]) )" ${OUTPUT}/CPG/CPGPROD.out > ${OUTPUT}/CPG/CPGPROD.bed
+python -c "import sys;sys.stdout.write(''.join([line for line in open(sys.argv[1]) if len(line.strip().split()) > 2]) )" ${OUTPUT}/CPG/CPGPROD.out | \
+  awk 'BEGIN{OFS="\t"};NR>1 {print $1,$3,$4,$5"#"$8}'> ${OUTPUT}/CPG/CPGPROD.bed
 bedtools intersect -a ${OUTPUT}/CPG/CPGPROD.bed -b $BEDFILE -wa -wb > ${OUTPUT}/CPG/CPGPROD.specific.bed
