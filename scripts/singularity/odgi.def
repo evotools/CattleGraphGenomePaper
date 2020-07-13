@@ -1,0 +1,13 @@
+Bootstrap: docker
+From: ubuntu:18.04
+
+%labels
+    MyLabel odgi
+
+%post
+    # update system and install dependencies not present in vg image
+    apt-get -qq update && apt-get -qq install -y build-essential cmake python3-distutils python3-dev
+    git clone --recursive https://github.com/vgteam/odgi.git && cd odgi && cmake -H. -Bbuild && cmake --build build -- -j 3 
+
+%environment
+    export PATH=$PATH:/odgi/bin
