@@ -17,7 +17,8 @@ mkdir INTERSECT_BN_ASM
 cat sample{1..2}.SV.noTranslocations.bed | bedtools sort -i - > INTERSECT_BN_ASM/OMregions.bed
 ```
 
-To extract the bed files
+
+# Processing the VCF files
 
 
 Withing each folder there should be a subfolder with the sample name containing a vcf for each sample. Files will then be listed in different text lists that will be used as input for the different analyses.
