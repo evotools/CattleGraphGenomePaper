@@ -25,3 +25,12 @@ If needed, it is possible to add new variants to a pre-existing graph, [although
 ## Whole genome sequencing analyses
 Downstream analysis have been performed using the wrapper [bagpipe](https://bitbucket.org/renzo_tale/bagpipe/src/master/), which allow to perform WGS, ATAC-seq, RRBS and RNA-seq analysis on a SGE/UGE cluster environment. This pipeline also includes script to perform graph genome alignment and variant calling when a graph genome is provided.
 
+## VCF metrics
+VCF-based metrics and analyses can be found in the ```vcf_processing``` folder. Within this folder there are two subfolders, respectively for:
+1. SV_SPECIFIC: identification of SV specific for a single breed starting from the vg VCF files.
+2. STATISTCS: Calculate metrics on the vcf generated through the multiple analyses.
+
+# ATAC-seq analyses
+Script for processing the ATAC-seq results generated through [bagpipe](https://bitbucket.org/renzo_tale/bagpipe/src/master/) are collected in the ```ATA-seq``` folder, and are separed in two distinct scripts, nubered in the order or run:
+1. Removal of the blank from the analysed samples
+2. Extraction of the peaks and cross-referencing for each genome
