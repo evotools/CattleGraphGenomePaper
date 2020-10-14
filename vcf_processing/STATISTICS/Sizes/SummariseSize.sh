@@ -27,5 +27,5 @@ currpath=`pwd`
 
 python ${currpath}/NormaliseQUAL.py -i SOFT_FILT/${outfld}_ALL/$sample/${sample}_AllelicBalanceAllSites.tmp.gz | python SummariseSize.py > SOFT_FILT/${outfld}_ALL/$sample/${sample}.csv && rm SOFT_FILT/${outfld}_ALL/$sample/${sample}_AllelicBalanceAllSites.tmp.gz
 python ${currpath}/NormaliseQUAL.py -i SOFT_FILT/${outfld}_NOVEL/$sample/${sample}_AllelicBalanceNovelSites.tmp.gz | python SummariseSize.py > SOFT_FILT/${outfld}_NOVEL/$sample/${sample}.csv && rm SOFT_FILT/${outfld}_NOVEL/$sample/${sample}_AllelicBalanceNovelSites.tmp.gz
-python ${currpath}/NormaliseQUAL.py -i SOFT_FILT/${outfld}_KNOWN/$sample/${sample}_AllelicBalanceKnownSites.tmp.gz | python SummariseSize.py > SOFT_FILT/${outfld}_KNOWN/$sample/${sample}.csv && tm SOFT_FILT/${outfld}_KNOWN/$sample/${sample}_AllelicBalanceKnownSites.tmp.gz
+python ${currpath}/NormaliseQUAL.py -i SOFT_FILT/${outfld}_KNOWN/$sample/${sample}_AllelicBalanceKnownSites.tmp.gz | python SummariseSize.py > SOFT_FILT/${outfld}_KNOWN/$sample/${sample}.csv && rm SOFT_FILT/${outfld}_KNOWN/$sample/${sample}_AllelicBalanceKnownSites.tmp.gz
 

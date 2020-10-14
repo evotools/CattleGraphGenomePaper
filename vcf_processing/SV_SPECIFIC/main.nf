@@ -48,7 +48,7 @@ process createRegion{
     myfaifile = read.table("${params.faifile}", h=F) %>%
         filter(V1 %in% c(1:29))
 
-    lengths = as.numeric(abs(read.table("${params.lengths}", h=T)[,1]))
+    lengths = as.numeric(abs(read.table("${params.lengths}", h=F)[,1]))
 
     regions = generateRandomPos(myfaifile[,'V1'], myfaifile[,'V2'], lengths)
     regions = as.data.frame(cbind(regions, paste("REGION", c(1: nrow(regions)), sep = "")))
@@ -117,7 +117,7 @@ process zscores{
     myfaifile = read.table("${params.faifile}", h=F) %>%
     filter(V1 %in% c(1:29))
 
-    lengths = as.numeric(abs(read.table("${params.lengths}", h=T)[,1]))
+    lengths = as.numeric(abs(read.table("${params.lengths}", h=F)[,1]))
     found = c(read.table("${result}", h=F)[,1])
     print(length(found))
     p = ggplot(data.frame(found=found), aes(x=found)) + 

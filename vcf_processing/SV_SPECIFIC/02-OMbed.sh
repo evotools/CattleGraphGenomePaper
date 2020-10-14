@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [ ! -e BNOM ]; then mkdir BNOM; fi
+if [ ! -e BNOM/BED ]; then mkdir BNOM/BED; fi
+
+
 for sample in NDama_1_1628 NDama_NN031; do
     bcftools query -f'%CHROM\t%POS\t%END\t%ID\t%SVTYPE\t%SVLEN\t%CIPOS\t%CIEND\n' BNOM/VCFs/${sample}_fix.vcf.gz | \
         grep -v "TRA" | 
