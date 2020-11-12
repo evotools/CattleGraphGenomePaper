@@ -10,7 +10,6 @@
 #$ -hold_jid graphAdd
 #$ -o ./LOGS/$JOB_NAME.$JOB_ID.out
 #$ -e ./LOGS/$JOB_NAME.$JOB_ID.err
-#$ -P roslin_ctlgh
 . /etc/profile.d/modules.sh
 module load java/jdk/1.8.0
 module load roslin/samtools/1.9
