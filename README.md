@@ -17,7 +17,8 @@ Then, simply run:
 The final graphs will be included into ./GRAPH, including the XG and GCSA indexes.
 
 # Addition of further VCF files
-If needed, it is possible to add new variants to a pre-existing graph, [although this is still highly experimental](https://github.com/vgteam/sv-genotyping-paper/issues/6). To do so, proceed as follow:
+If needed, it is possible to add new variants to a pre-existing graph (see [here](https://github.com/vgteam/sv-genotyping-paper/issues/6)). 
+To do so, proceed as follow:
   1. Create a compliant VCF using the GraphVCF.py script (detailed use of the script can be seen in the submitted script GenerateGraphVCF.sh).
   2. List the new vcf in a file.
   3. Run the AddToGraph.sh script in scripts folder, providing the list of vg graph to expand (-g), the list of VCF to use (-v) and specifying the reference genome to expand (-s)
