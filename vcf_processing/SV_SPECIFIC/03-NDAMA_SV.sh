@@ -24,7 +24,7 @@ for n in NDama_ND21 NDama_ND23 NDama_ND39; do
 	echo `pwd`/NDama_final/${n}/${n}.unique.vcf.gz > Ndama.final.txt
 done
 # Combine filtered N'Dama
-bcftools merge -l NDama.final.txt -O v | sed 's/hereford.//g' | python SVLEN.py - | bgzip -c > NDama_final/NDama.vcf.gz && tabix -p vcf NDama_final/NDama.vcf.gz
+bcftools merge -m all -l NDama.final.txt -O v | sed 's/hereford.//g' | python SVLEN.py - | bgzip -c > NDama_final/NDama.vcf.gz && tabix -p vcf NDama_final/NDama.vcf.gz
 # bcftools merge -l NDama.final.txt -O v | vcfmultibreak | sed 's/hereford.//g' | python SVLEN.py - | bgzip -c > NDama_final/NDama.vcf.gz && tabix -p vcf NDama_final/NDama.vcf.gz
 
 ## Annotate variants

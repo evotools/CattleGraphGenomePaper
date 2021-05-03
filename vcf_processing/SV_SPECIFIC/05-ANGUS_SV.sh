@@ -21,7 +21,7 @@ for s in Angus01 Angus32065 Angus34122; do
 	echo `pwd`/Angus_final/${s}/${s}.unique.vcf.gz >> Angus.final.txt
 done
 # Combine filtered N'Dama
-bcftools merge -l Angus.final.txt -O v | sed 's/hereford.//g' | python SVLEN.py - | bgzip -c > Angus_final/Angus.vcf.gz && tabix -p vcf Angus_final/Angus.vcf.gz
+bcftools merge -m all -l Angus.final.txt -O v | sed 's/hereford.//g' | python SVLEN.py - | bgzip -c > Angus_final/Angus.vcf.gz && tabix -p vcf Angus_final/Angus.vcf.gz
 
 ## Annotate variants
 mkdir VEP/output 

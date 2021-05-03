@@ -4,7 +4,7 @@ export PATH=$PATH:~/Documents/Software/vcflib/bin
 # Annotate each novel vcf
 for i in NDama Angus Sahiwal; do 
     # Combine samples of each breed into a joint call
-    bcftools merge -l ${i}.txt -O v | sed 's/hereford.//g' | vcfbreakmulti | python SVLEN.py - | bgzip -c > $PWD/${i}_final/${i}.all.vcf.gz
+    bcftools merge -m all -l ${i}.txt -O v | sed 's/hereford.//g' | vcfbreakmulti | python SVLEN.py - | bgzip -c > $PWD/${i}_final/${i}.all.vcf.gz
     tabix -p vcf $PWD/${i}_final/${i}.all.vcf.gz
     echo "File $PWD/Ndama_final/NDama.all.vcf.gz ready."
     # # Combine, annotate sizes and keep if SVLEN>500

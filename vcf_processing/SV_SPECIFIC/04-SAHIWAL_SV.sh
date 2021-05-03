@@ -21,7 +21,7 @@ for s in Sahiwal_3 Sahiwal_6 Sahiwal_7; do
 	echo `pwd`/Sahiwal_final/${s}/${s}.unique.vcf.gz >> Sahiwal.final.txt
 done
 # Combine filtered N'Dama
-bcftools merge -l Sahiwal.final.txt -O v | sed 's/hereford.//g' | python SVLEN.py - | bgzip -c > Sahiwal_final/Sahiwal.vcf.gz && tabix -p vcf Sahiwal_final/Sahiwal.vcf.gz
+bcftools merge -m all -l Sahiwal.final.txt -O v | sed 's/hereford.//g' | python SVLEN.py - | bgzip -c > Sahiwal_final/Sahiwal.vcf.gz && tabix -p vcf Sahiwal_final/Sahiwal.vcf.gz
 
 ## Annotate variants
 mkdir VEP/output 
