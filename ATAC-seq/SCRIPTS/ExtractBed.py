@@ -24,9 +24,9 @@ def main():
 	for line in infile:
 		line = line.strip().split()
 		peakID = line[3]
-		if line[0][0] == ":":
+		if ":" in line[0]:
 			positions = line[0].split(":")[-1]
-			sequenceID = ':'.join( line[0].split(":")[2:-1] )		
+			sequenceID = ':'.join( line[0].split(":")[0:-1] )		
 			Sbpi, Sbpe = list(map(int, positions.split("-") ))
 			try: regions["{}#:_:#{}#:_:#{}".format(sequenceID, Sbpi, Sbpe)] += [peakID]
 			except: regions["{}#:_:#{}#:_:#{}".format(sequenceID, Sbpi, Sbpe)] = [peakID]
