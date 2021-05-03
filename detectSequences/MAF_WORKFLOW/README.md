@@ -7,10 +7,7 @@ The pipeline requires the following software to be installed and accessible:
 1. [hal](https://github.com/ComparativeGenomicsToolkit/hal)
 2. [bedtools](https://bedtools.readthedocs.io/en/latest/)
 3. [samtools](https://samtools.github.io/)
-4. [CpGProD](http://doua.prabi.fr/software/cpgprod)
-5. [RepeatMasker](http://www.repeatmasker.org/)
-6. [HOMER](http://homer.ucsd.edu/homer/)
-7. [ORFfinder](https://ftp.ncbi.nlm.nih.gov/genomes/TOOLS/ORFfinder/linux-i64/)
+4. [HOMER](http://homer.ucsd.edu/homer/)
 
 ## The pipeline
 The pipeline consists of four main steps:
@@ -95,3 +92,5 @@ This is a simple bed file with the following fields:
 
 It is possible and easy to extract unique, non repetitive regions by using combinations of support vectors, boolean filtering for 
 repetitiveness and gaps and for size based on the windows size, in addition to filtering by position. 
+
+

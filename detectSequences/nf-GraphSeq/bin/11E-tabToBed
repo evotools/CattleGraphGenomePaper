@@ -1,0 +1,8 @@
+#!/usr/bin/env python
+import sys
+
+for line in open(sys.argv[1]):
+    contig = line.strip().split()[0]
+    iid = contig.split(":")[0]
+    bpi, bpe = contig.split(":")[1].split("-")
+    print(f"{iid}\t{bpi}\t{bpe}")

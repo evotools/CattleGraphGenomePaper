@@ -1,0 +1,63 @@
+#!/usr/bin/env python
+import sys
+import upsetplot
+import pandas as pd
+import numpy as np
+from matplotlib import pyplot
+
+
+#angus.1 0       5       57678621        +       AAACG   angus   0
+def main():
+    revert = {"A":"T", "T":"A", "C":"G", "G":"C"}
+    rename = {'ndama': "N'Dama", "angus":"Angus", "ankole":"Ankole", "brahman":"Brahman"}
+
+    # Read nodes
+    print("Read nodes")
+    nodes = {}
+    groups = set()
+    for line in open(sys.argv[1]):
+        line = line.strip().split()
+        seqID, bpi, bpe, nodeID, strand, seq, supportvec, nearGap = line[0:8]
+        if strand == '-': seq = ''.join([ revert.get(i) for i in seq[::-1] ])
+        if nodeID not in nodes:
+            nodes[nodeID] = {'supportVector': supportvec, "length": len(seq), "sequence": seq }
+            groups.add(supportvec)
+
+    # Define per genome
+    print("Calculate stats")
+    genomes = { genome: [0, 0] for genome in set(','.join(groups).split(',')) }
+    groups = {group : [0, 0] for group in groups}
+    for node in nodes:
+        length = nodes[node]['length']
+        sv = nodes[node]['supportVector']
+        groups[ sv ][0] += 1
+        groups[ sv ][1] += length
+        for genome in sv.split(','):
+            genomes[genome][0] += 1
+            genomes[genome][1] += length
+    
+    # Print statistics
+    print("Genome\t#nodes\tbp")
+    for genome in genomes:
+        print( f"{genome}\t{genomes[genome][0]}\t{genomes[genome][1]}" )
+    print()
+
+    # Print vectors
+    print("Support vectors")
+    for group in groups:
+        print( f"{group}\t{groups[group][0]}\t{groups[group][1]}" )
+    print()
+
+    print("Create upset plot")
+    group_names = [ group for group in groups ]
+    values = [ groups[group][1] for group in groups ]
+    support = [ tuple([ rename.get(name, name) for name in group.split(',') ]) for group in group_names ]
+    scoring = upsetplot.from_memberships(support, data = values)
+    scoring = scoring.sort_values(ascending = False)
+    upsetplot.plot(scoring, sort_by = "degree", )
+    pyplot.savefig(f"./{sys.argv[2]}.pdf", dpi = 300)
+    return 0
+
+
+if __name__ == "__main__":
+    main()

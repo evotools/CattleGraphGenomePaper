@@ -1,0 +1,120 @@
+#!/usr/bin/env python
+import argparse
+
+'''
+# Predicted genes for sequence number 2 on both strands
+# start gene g3
+brahman.27:5989449-6037244      AUGUSTUS        gene    4654    7643    1       -       .       g3
+brahman.27:5989449-6037244      AUGUSTUS        transcript      4654    7643    .       -       .       g3.t1
+brahman.27:5989449-6037244      AUGUSTUS        stop_codon      4654    4656    .       -       0       transcript_id "g3.t1"; gene_id "g3";
+brahman.27:5989449-6037244      AUGUSTUS        CDS     4654    5532    .       -       0       transcript_id "g3.t1"; gene_id "g3";
+brahman.27:5989449-6037244      AUGUSTUS        CDS     5982    6064    .       -       2       transcript_id "g3.t1"; gene_id "g3";
+brahman.27:5989449-6037244      AUGUSTUS        CDS     6576    6671    .       -       2       transcript_id "g3.t1"; gene_id "g3";
+brahman.27:5989449-6037244      AUGUSTUS        CDS     7385    7511    .       -       0       transcript_id "g3.t1"; gene_id "g3";
+brahman.27:5989449-6037244      AUGUSTUS        CDS     7632    7643    .       -       0       transcript_id "g3.t1"; gene_id "g3";
+brahman.27:5989449-6037244      AUGUSTUS        start_codon     7641    7643    .       -       0       transcript_id "g3.t1"; gene_id "g3";
+# protein sequence = [MEPLESVTFEDVAVDFTQEEWSLLDKSQKNLFRNVMLETVSHLVSVGNQISKSEVISQLEQGKELWTAAAGGLQGQSP
+# GSERPLRQQEMMFMRSVYRKHTSPTMAMVSHPQGDPAGCTDLRDEVPSRYSPQHSSIHLRRKRNVSKQCGKSLSQGSSLNAQGHIHSRGKLCECPLCR
+# KVFSNCFSLRQHKMIHTGEKPYKCGLCGSGFFQSSDLRNHNRVHTGEKPFKCHVCGKLFSQRSYLKQHEKTHTGEKPYKCRLCEKNFNQISYLRKHEK
+# IHPKEKQYECHQCGKTFSQNSGLSQHKRIHTGEKPHVCLVCGKAFSQSSELTRHKRTHTGEKPYTCQRCGNAFSQYVNLRRHERTHTGEQPYECQLCG
+# KCFSHSSSLRRHEGTQHQREKQEGPQ]
+# end gene g3
+'''
+
+def import_abinitio(indata):
+    skip = 1
+    features = {}
+    feat = ""
+    isprot = 0
+    for line in open(indata):
+        if "# start gene" in line:
+            skip = 0
+            feat = line.strip().split()[-1]
+            features[feat] = {"features":[], "sequence": ""}
+            continue
+        if "# end gene" in line:
+            skip = 1
+            isprot = 0
+            feat = ""
+            continue
+        if not skip:
+            if "#" not in line:
+                features[feat]["features"].append( line.strip().split() ) 
+            elif "# protein sequence" in line:
+                isprot = 1
+                features[feat]["sequence"] += line.strip().replace('# protein sequence = [','').replace(']','')
+            elif isprot and "end" not in line:
+                features[feat]["sequence"] += line.strip().replace('# ','').replace(']','')
+        
+    return features
+
+def separateCompleteGenes(abinitio):
+    complete = {}
+    incomplete = {}
+    for gene in abinitio:
+        feat_types = set([feature[2] for feature in abinitio[gene]["features"] ])
+        if "stop_codon" in feat_types and "start_codon" in feat_types:
+            complete[gene] = abinitio[gene]
+        else:
+            incomplete[gene] = abinitio[gene]
+    return complete, incomplete
+
+def parser():
+
+    parser = argparse.ArgumentParser(description='Classify nodes based on the path of origin (i.e. sequence of origin).')
+
+    # Defining the arguments.
+    parser.add_argument('-i','--input', metavar = 'input.abInitio.gff', type = str, help = 'Input ab initio predicton from augustus', \
+                        default = None, dest = 'abinitio', required=True)
+    parser.add_argument('-o','--output', metavar = 'path/to/outroot', type = str, help = 'Output file name (Default: output)', \
+                        default = "output", dest = 'outname', required=False)
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s 1.0.0')
+
+    # Get arguments
+    args = parser.parse_args()
+
+    return args
+
+
+def main():
+    args = parser()
+    # read ab initio
+    abInitioData = import_abinitio(args.abinitio)
+    print(f"Found {len(abInitioData)} features")
+
+    completes, incompletes = separateCompleteGenes(abInitioData)
+    print(f"Found {len(completes)} complete features")
+    print(f"Found {len(incompletes)} incomplete features")
+
+    print("Saving completes...")
+    ofasta = open(f"{args.outname}.complete.aa", "w")
+    ogff = open(f"{args.outname}.complete.gff", "w")
+    ogff.write("##gff-version   3\n")
+    for g in completes:
+        ofasta.write(f">{g}\n")
+        ofasta.write(f"{completes[g]['sequence']}\n")
+        for f in completes[g]["features"]:
+            my_line = '\t'.join(f)
+            ogff.write( f"{ my_line }\n" )
+    ogff.close()
+    ofasta.close()
+
+    print("Saving incompletes...")
+    ofasta = open(f"{args.outname}.incomplete.aa", "w")
+    ogff = open(f"{args.outname}.incomplete.gff", "w")
+    ogff.write("##gff-version   3\n")
+    for g in incompletes:
+        ofasta.write(f">{g}\n")
+        ofasta.write(f"{incompletes[g]['sequence']}\n")
+        for f in incompletes[g]["features"]:
+            my_line = '\t'.join(f)
+            ogff.write( f"{ my_line }\n" )
+    ogff.close()
+    ofasta.close()
+
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()

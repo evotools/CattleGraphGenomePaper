@@ -1,0 +1,22 @@
+name: specseq
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+  - r
+dependencies:
+  - bedtools
+  - samtools
+  - python=3.8
+  - last
+  - R
+  - r-base
+  - r-tidyverse
+  - r-reshape2
+  - r-forcats
+  - r-ggthemes
+  - r-patchwork
+  - augustus
+  - diamond
+  - pip:
+    - bdsg

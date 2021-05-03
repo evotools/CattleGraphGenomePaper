@@ -1,0 +1,59 @@
+#!/usr/bin/env python
+import argparse
+import sys
+
+
+def parser():
+
+    parser = argparse.ArgumentParser(description='Classify nodes based on the path of origin (i.e. sequence of origin).')
+
+    # Defining the arguments.
+    parser.add_argument('-i','--intervals', metavar = 'intervals.bed', type = str, help = 'Input intervals from PG with nodes (has to be sorted)', \
+                        default = None, dest = 'intervals', required=True)
+    # parser.add_argument('-g','--gaf', metavar = 'paths.gaf', type = str, help = 'Gaf paths generated with vg -A -v', \
+    #                     default = None, dest = 'gaf', required=True)
+    # parser.add_argument('-r','--reference', metavar = 'name', type = str, help = 'Name of the reference genome', \
+    #                     dest = 'reference_genome', required=True)
+    parser.add_argument('-o','--output', metavar = 'path/to/outroot', type = str, help = 'Output file name (Default: output)', \
+                        default = "output", dest = 'outname', required=False)
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s 1.0.0')
+
+    # Get arguments
+    args = parser.parse_args()
+
+    return args
+
+def main():
+    # Get input arguments
+    args = parser()
+
+    nodes = {}
+    if args.intervals == "stdin" or args.intervals == "-":
+        indat = sys.stdin
+    else:
+        indat = open(args.intervals)
+
+    for line in indat:
+        line = line.strip().split()
+        seqID = line[0].split('.')[0]
+        if line[3] not in nodes.keys(): nodes[line[3]] = set([seqID])
+        else: nodes[line[3]].add( seqID )
+
+    # Classify intervals
+    outfile = open("{}.bed".format(args.outname), "w")
+    for line in open(args.intervals):
+        line = line.strip().split()
+        outfile.write( "{}\t{}\n".format('\t'.join(line), ','.join(
+            list(
+                nodes.get( line[3] ) 
+                ) 
+            ) ) )
+
+
+
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()

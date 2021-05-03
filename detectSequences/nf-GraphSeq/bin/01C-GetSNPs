@@ -1,0 +1,140 @@
+#!/usr/bin/env python
+import bdsg
+import sys
+import argparse
+
+def parser():
+
+    parser = argparse.ArgumentParser(description='Find non-reference nodes in a PG graph.')
+
+    # Defining the arguments.
+    parser.add_argument('-i','--input', metavar = 'graph_name', type = str, help = 'Input graph for analyses', \
+                        default = None, dest = 'infile', required=True)
+    parser.add_argument('-o','--output', metavar = 'path/to/outroot', type = str, help = 'Output file name (Default: output)', \
+                        default = "output", dest = 'outname', required=False)
+    parser.add_argument('-r','--reference', metavar = 'name', type = str, help = 'Name of the reference genome', \
+                        dest = 'reference_genome', required=True)
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s 1.0.0')
+
+    # Get arguments
+    args = parser.parse_args()
+
+    return args
+
+def id_of_nodes_in_path(pg, my_path_handle):
+    nodes_ids = []
+    for path in my_path_handle:
+        pg.for_each_step_in_path( path, 
+            lambda y: nodes_ids.append(pg.get_id(pg.get_handle_of_step(y))) or True)
+    return set(nodes_ids)
+
+# def get_edge_for_node_handle(pg, node_handle):
+#     edges_handles = []
+#     bdsg.handlegraph.HandleGraph.for_each_edge(node_handle, lambda y: edges_handles.append(pg.edge_handle(y)) or True)
+#     return edges_handles
+
+
+def worker( pg, path_handle, ref_nodes ):
+    path_id = pg.get_path_name(path_handle)
+    bpi = 0 
+    bpe = 0
+    strand = ''
+    handles = []
+    intervals = []
+    data = {}
+    # Get nodes
+    pg.for_each_step_in_path( path_handle, 
+        lambda y: handles.append(pg.get_handle_of_step(y)) or True)
+    # Detect novel nodes
+    novel_handles = [ handle for handle in handles if pg.get_id(handle) not in ref_nodes ]
+    # Identify novel nodes and define closest reference node
+    tmplist = []
+    init = []
+    ending = []
+    while len(novel_handles) != 0:
+        handle = novel_handles.pop(0)
+        handle_idx = handles.index(handle)
+        # Find preceding ref node
+        while len(init) == 0:
+            flank_prec_idx = handle_idx - 1
+            if flank_prec_idx < 0: 
+                init = [ None ]
+                continue
+            if pg.get_id(handles[flank_prec_idx]) in ref_nodes: init = [handles[flank_prec_idx]]
+            else: 
+                sys.exit("Nodes are not sorted by order.")
+        # Find subsequent ref node
+        while len(ending) == 0:
+            flank_succ_idx = handle_idx + 1
+            if pg.get_id(handles[flank_succ_idx]) in ref_nodes: 
+                ending = [handles[flank_succ_idx]]
+            elif pg.get_id(handles[flank_succ_idx]) == pg.get_id(novel_handles[0]):
+                tmplist.append( novel_handles.pop(0) )
+            else:
+                sys.exit("Nodes are not sorted by order.")
+    print([pg.get_id(h) for h in tmplist])
+    print([pg.get_id(h) for h in init])
+    print([pg.get_id(h) for h in ending])
+    return 0
+
+
+def nodes_and_pos_path(pg, my_path_handles, my_ref_nodes):
+    tot = 0
+    intervals = []
+    for path_handle in my_path_handles:
+        worker(pg, path_handle, my_ref_nodes)
+    return intervals
+
+def main():
+    # Get input arguments
+    args = parser()
+
+    print("Read input PG")
+    pg = bdsg.bdsg.PackedGraph()
+    pg.deserialize( args.infile )
+    # overlay = bdsg.bdsg.PositionOverlay(pg)
+
+    node_count = pg.get_node_count()
+    edge_count = pg.get_edge_count()
+    path_count = pg.get_path_count()
+
+    print('Found:')
+    print( ' - {} nodes\n - {} edges\n - {} paths'.format( node_count, edge_count, path_count ) )
+
+    # Get paths
+    path_handle = []
+    pg.for_each_path_handle(lambda y: path_handle.append(y) or True)
+
+    # Get reference paths and nodes
+    ## Get paths for reference
+    print("Getting reference paths")
+    reference_path_handle = [ i for i in path_handle if args.reference_genome in pg.get_path_name(i) ]
+    ## Get nodes for reference paths
+    print("Getting reference node ids")
+    reference_nodes_ids = id_of_nodes_in_path(pg, reference_path_handle)
+
+    # Get query paths
+    ## Get paths for query sequences
+    print("Getting query paths")
+    query_path_handle = [ i for i in path_handle if args.reference_genome not in pg.get_path_name(i) ]
+    ## Get nodes in reference
+    # print("Getting query node ids")
+    # query_nodes_ids = id_of_nodes_in_path(pg, query_path_handle)
+
+    # Get specific nodes:
+    print("Getting query-specific nodes")
+    intervals = nodes_and_pos_path(pg, query_path_handle, reference_nodes_ids)
+
+    print("Save nodes and their positions in the different genomes")
+    outfile = open('{}.bed'.format(args.outname), 'w')
+    for itv in intervals:
+        outfile.write('{}\n'.format( 
+            '\t'.join( 
+                map( str, itv ) ) 
+            )
+        )
+
+    return 0
+
+if __name__ == "__main__":
+    main()

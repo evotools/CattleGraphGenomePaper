@@ -1,0 +1,68 @@
+#!/usr/bin/env python
+import sys
+import argparse
+import os
+
+def parser():
+
+    parser = argparse.ArgumentParser(description='Classify the intervals identified.')
+
+    # Defining the arguments.
+    parser.add_argument('-i','--intervals', metavar = 'intervals.bed', type = str, help = 'Input intervals from labelled PG nodes (has to be sorted)', \
+                        default = None, dest = 'intervals', required=True)
+    parser.add_argument('-c','--contigs', metavar = 'contigs.txt', type = str, help = 'List of contigs not in scaffolds', \
+                         dest = 'contigs', required=False)
+    parser.add_argument('-s','--scaffolds', metavar = 'scaffolds.txt', type = str, help = 'List of scaffolds to use to call telomeric portions', \
+                         dest = 'scaffolds', required=False)
+    parser.add_argument('-t','--telomere', metavar = 'N', type = int, help = 'Approximate telomere length (used to detect regions at the end of a scaffold; Default: 10000)', \
+                         dest = 'telomere', required=False, default = 10000)
+    parser.add_argument('-r','--ratio', metavar = 'N', type = float, help = 'Proportion of novel bases to be defined a new sequence; Default: .95)', \
+                         dest = 'ratio', required=False, default = .95)
+    parser.add_argument('-o','--output', metavar = 'path/to/outroot', type = str, help = 'Output file name (Default: output)', \
+                        default = "output", dest = 'outname', required=False)
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s 1.0.0')
+
+    # Get arguments
+    args = parser.parse_args()
+
+    return args
+
+#"SEQID","BPI","BPE","NODES","N_NODES","STRANDS","SEQS","N_CLOSE_TO_GAPS","NODES_LENGTH"
+def main():
+    args = parser()
+    contigs = []
+    scaffolds = {}
+    classes = {i:"SHORT" for i in range(0, 11)}
+    classes.update( {i:"INTERMEDIATE" for i in range(11, 61)} )
+    if os.path.exists(args.contigs): contigs = [i.strip() for i in open(args.contigs)]
+    if os.path.exists(args.scaffolds): scaffolds = { i.split()[0]:int(i.strip().split()[1]) for i in open(args.scaffolds) }
+
+    outfile = open(f"{args.outname}.seqtype.bed", "w")
+    for line in open(args.intervals):
+        if "SEQID" in line: 
+            outfile.write( f"#{line.strip()}\tREGION_SIZE\tCLASSIFICATION\n" )
+            continue
+        seqid, bpi, bpe, nodes, n_nodes, strands, seqs, n_near_gaps, nodes_l = line.strip().split()
+        bpi, bpe, n_nodes, n_near_gaps, nodes_l = float(bpi), float(bpe), int(n_nodes), int(n_near_gaps), float(nodes_l)
+        # Basic stats (length and novelty)
+        if nodes_l / (bpe - bpi) >= args.ratio: stype = f"NOVEL#{classes.get(bpe - bpi, 'LONG')}"
+        else: stype = f"HAPLOTYPE#{classes.get(bpe - bpi, 'LONG')}"
+
+        # Check if flanking gaps
+        if n_near_gaps != 0: stype += "#FLANK_GAP"
+
+        # Check if it is a contig
+        if seqid in contigs: stype += "#CONTIG"
+
+        # Check if it is telomeric
+        if seqid in scaffolds:
+            initial = bpi < 10000 or bpe < 10000
+            final = bpi > (scaffolds.get(seqid) - args.telomere) or bpe > (scaffolds.get(seqid) - args.telomere)
+            if initial or final: stype += "#TELOMERE"
+        outfile.write( f"{seqid}\t{int(bpi)}\t{int(bpe)}\t{nodes}\t{n_nodes}\t{strands}\t{seqs}\t{n_near_gaps}\t{int(nodes_l)}\t{int(bpe-bpi)}\t{stype}\n" )
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()

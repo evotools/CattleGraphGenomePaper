@@ -1,0 +1,141 @@
+#!/usr/bin/env python
+import argparse
+import sys
+
+
+def parser():
+
+    parser = argparse.ArgumentParser(description='Filter gaps from nodes and label flanking.')
+
+    # Defining the arguments.
+    parser.add_argument('-i','--intervals', metavar = 'intervals.bed', type = str, help = 'Input intervals from labelled PG nodes (has to be sorted)', \
+                        default = None, dest = 'intervals', required=True)
+    # parser.add_argument('-g','--gaf', metavar = 'paths.gaf', type = str, help = 'Gaf paths generated with vg -A -v', \
+    #                     default = None, dest = 'gaf', required=True)
+    # parser.add_argument('-f','--flank', metavar = 'N', type = int, help = 'Distance to classify a node as neighbouring a gap in bp (Default: 1000)', \
+    #                      dest = 'flank', required=False, default = 1000)
+    parser.add_argument('-o','--output', metavar = 'path/to/outroot', type = str, help = 'Output file name (Default: output)', \
+                        default = "output", dest = 'outname', required=False)
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s 1.0.0')
+
+    # Get arguments
+    args = parser.parse_args()
+
+    return args
+
+def make_intervals(line):
+    bps = list(range( int(line[1]), int(line[2]) ))
+    nts = list(line[5])
+    tBPI = None
+    tBPE = None
+    tmpSeq = ''
+    newItvs = []
+    for n in range(0, len(bps)):
+        if nts[n] == "N" and tBPI is not None:
+            itv = [ line[0], str(tBPI), str(tBPE + 1), line[3] + "i", line[4], tmpSeq, line[6] ]
+            newItvs.append( itv )
+            tBPI = None
+            tBPE = None
+            tmpSeq = ''
+        elif nts[n] != "N":
+            tmpSeq += nts[n]
+            tBPE = bps[n]
+            if tBPI is None: 
+                tBPI = bps[n]
+        else: continue
+    if tBPI is not None:
+        itv = [ line[0], str(tBPI), str(tBPE + 1), line[3] + "i", line[4], tmpSeq, line[6] ]
+        newItvs.append( itv )
+    return newItvs
+
+def make_gaps(line):
+    bps = list(range( int(line[1]), int(line[2]) ))
+    nts = list(line[5])
+    tBPI = None
+    tBPE = None
+    tmpSeq = ''
+    gaps = []
+    for n in range(0, len(bps)):
+        if nts[n] != "N" and tBPI is not None:
+            itv = [ line[0], str(tBPI), str(tBPE + 1), line[3] + "g", line[4], tmpSeq, line[6] ]
+            gaps.append( itv )
+            tBPI = None
+            tBPE = None
+            tmpSeq = ''
+        elif nts[n] == "N":
+            tmpSeq += nts[n]
+            tBPE = bps[n]
+            if tBPI is None: 
+                tBPI = bps[n]
+        else: continue
+    if tBPI is not None:
+        itv = [ line[0], str(tBPI), str(tBPE + 1), line[3] + "g", line[4], tmpSeq, line[6] ]
+        gaps.append( itv )
+    return gaps
+
+def label_nodes(nodes, gaps):
+    new_nodes = []
+    for node in nodes:
+        in_gap = "0" if sum( [ intersect( list(map(int, node[1:3])), i ) for i in gaps.get(node[0], [[-10,-1]]) ] ) == 0 else "1"
+        new_nodes += [ node + [in_gap] ]
+    return new_nodes
+
+def intersect(itv1, itv2):
+    return  1 if itv2[1] > itv1[0] or itv1[1] < itv2[0] else 0
+
+# def gaps_array(gaps, flank):
+#     gap_array = {}
+#     for gap in gaps:
+#         if gap[0] not in gap_array: 
+#             gap_array[gap[0]] = [ [ int(gap[1]) - flank, int(gap[2]) + flank ] ]
+#         else: 
+#             gap_array[gap[0]] += [ [ int(gap[1]) - flank, int(gap[2]) + flank ] ]
+#     return gap_array
+
+
+def main():
+    # Get input arguments
+    args = parser()
+
+    # Define nodes and N-mers
+    print("Reading nodes")
+    nodes = []
+    gaps = []
+    for line in open(args.intervals):
+        line = line.strip().split()
+        # If node has N, remove Ns and create new interval(s)
+        if "N" in line[5]:
+            new_nodes = make_intervals( line )
+            local_gaps = make_gaps( line )
+            nodes += new_nodes
+            gaps += local_gaps
+        else:
+            nodes += [line]
+    
+    # # Classify intervals
+    # print("Detect nodes neighbouring a gap ({} flank)".format(args.flank) )
+    # labeled_nodes = label_nodes( nodes, gaps_array(gaps, args.flank) )
+
+    # Write new Nmer-less intervals
+    print("Write output")
+    outfile = open("{}.noNmers.bed".format(args.outname), "w")
+    for line in nodes:
+        outfile.write( "{}\n".format( '\t'.join(line) ) )
+    outfile.close()
+
+    # Write Nmer intervals
+    # outfile = open("{}.Nmers.bed".format(args.outname), "w")
+    # for line in gaps:
+    #     line[1] = str( int(line[1]) - args.flank )
+    #     line[2] = str( int(line[2]) + args.flank )
+    #     outfile.write( "{}\n".format( '\t'.join(line) ) )
+    # outfile.close()
+
+
+
+
+    return 0
+
+
+if __name__ == "__main__":
+    main()

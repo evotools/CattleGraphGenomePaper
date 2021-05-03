@@ -1,0 +1,21 @@
+#!/usr/bin/env Rscript
+options(stringsAsFactors = F)
+args = commandArgs(T)
+
+inbed=read.table(args[1], h=T, comment.char = "")
+repval=read.table(args[2], h=F)
+outname = args[3]
+
+average = mean(repval[,4])
+stdev = sd(repval[,4])
+cat(paste("Average autosomal repetitiveness: ", average, '\n'))
+cat(paste("St.Dev. autosomal repetitiveness: ", stdev, '\n\n'))
+cat(paste("Initial regions (#): ", nrow(inbed), '\n' ))
+cat(paste("Initial regions (bp): ", sum(abs(inbed[,3] - inbed[,2])), '\n' ))
+inbed[,"Zscores"] = (average - inbed[,14])/ stdev  
+inbed[,"Pval"] = pnorm(inbed[,"Zscores"])
+retained = inbed[inbed$Pval > (0.05/nrow(inbed)), ]
+retained = retained[,c(1:14,16,17,15)]
+cat(paste("Saved regions (#): ", nrow(retained), '\n' ))
+cat(paste("Saved regions (bp): ", sum(abs(retained[,3] - retained[,2])), '\n\n' ))
+write.table(retained, outname, sep = "\t", col.names=F, row.names = F, quote = F, append=TRUE)
