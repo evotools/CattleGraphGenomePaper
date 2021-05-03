@@ -29,9 +29,12 @@ Downstream analysis have been performed using the wrapper [bagpipe](https://bitb
 ## VCF metrics
 VCF-based metrics and analyses can be found in the ```vcf_processing``` folder. Within this folder there are two subfolders, respectively for:
 1. SV_SPECIFIC: identification of SV specific for a single breed starting from the vg VCF files.
-2. STATISTCS: Calculate metrics on the vcf generated through the multiple analyses.
+2. STATISTICS: Calculate metrics on the vcf generated through the multiple analyses.
 
 # ATAC-seq analyses
-Script for processing the ATAC-seq results generated through [bagpipe](https://bitbucket.org/renzo_tale/bagpipe/src/master/) are collected in the ```ATA-seq``` folder, and are separed in two distinct scripts, nubered in the order or run:
+Script for processing the ATAC-seq results generated through [bagpipe](https://bitbucket.org/renzo_tale/bagpipe/src/master/) are collected in the ```ATA-seq``` folder, and are separated in two distinct scripts, numbered in the order or run:
 1. Removal of the blank from the analysed samples
 2. Extraction of the peaks and cross-referencing for each genome
+
+# Detect non-reference sequence
+Non-reference sequence can be detected using the nextflow workflow included in `detectSequences/nf-GraohSeq`. The workflow requires nextflow to be installed.
