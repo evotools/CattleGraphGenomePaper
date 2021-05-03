@@ -1,6 +1,19 @@
 #!/usr/bin/env nextflow
 enable.nextflow.enable.dsl=2
 
+// Log informations
+log.info """\
+Non-ref sequence   v 0.5a 
+================================
+PG                         : $params.pg
+Sequence pool              : $params.genome_pool
+Contigs IDs                : $params.contigs
+Scaffolds IDs              : $params.scaffolds
+Autosomes' repetitiveness  : $params.repetitiveness
+Proteins fasta             : $params.proteins
+Flanking regions           : $params.flank
+"""
+
 // Evaluate input files
 if (params.pg) { ch_pg = file(params.pg) } else { exit 1, 'Graph pg not specified!' }
 if (params.genome_pool) { ch_pool = file(params.genome_pool) } else { exit 1, 'Pooled genomes not specified!' }
