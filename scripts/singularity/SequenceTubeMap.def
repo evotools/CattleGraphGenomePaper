@@ -1,0 +1,28 @@
+Bootstrap: docker
+From: quay.io/vgteam/vg:v1.26.0
+
+%labels
+    MyLabel sequenceTubeMap with vg 1.26.0
+
+%post
+    # update system and install dependencies not present in vg image
+    apt-get -qq update && apt-get -qq install -y git gnupg
+    curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+    echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
+    apt-get -qq update && apt -qq install -y yarn
+    git clone https://github.com/vgteam/sequenceTubeMap.git && \
+        cd /sequenceTubeMap && \
+        yarn install && \
+        yarn build && \
+        yarn upgrade
+
+%runscript
+    cd /sequenceTubeMap/
+    yarn serve
+
+%environment
+    PORT=3000
+    ALLOW_HTTP=true
+    URL=localhost
+    export PORT ALLOW_HTTP URL
+    export PATH=/vg/bin:$PATH

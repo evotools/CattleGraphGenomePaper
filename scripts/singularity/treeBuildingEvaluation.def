@@ -1,0 +1,16 @@
+Bootstrap: docker
+From: quay.io/comparative-genomics-toolkit/cactus:v1.2.3
+
+%labels
+    Version v.1.2.3
+    MyLabel treeBuildingEvaluation
+
+%post
+apt-get update -qq && apt-get install -y -qq git  
+git clone https://github.com/joelarmstrong/treeBuildingEvaluation.git
+cd treeBuildingEvaluation &&\
+    make &&\
+    make install
+
+%environment
+export PATH=$PATH:/treeBuildingEvaluation/bin

@@ -2,22 +2,46 @@ Bootstrap: docker
 From: ubuntu:18.04
 
 %labels
-    Version v1.24.0
-    MyLabel hal2vg
+    Version v1.27.0
+    MyLabel vg
 
 %post
     # update system and install dependencies not present in vg image
-    apt-get -qq update && apt-get -qq install -y cmake build-essential git
-    apt-get -qq install -y build-essential git cmake pkg-config libncurses-dev libbz2-dev  \
-                     protobuf-compiler libprotoc-dev libprotobuf-dev libjansson-dev \
-                     automake libtool jq bc rs curl unzip redland-utils \
-                     librdf-dev bison flex gawk lzma-dev liblzma-dev liblz4-dev \
-                     libffi-dev libcairo-dev
+    apt-get -qq update
+    apt-get -qq install -y apt-utils || apt-get -qq install --fix-missing -y apt-utils
+    apt-get -qq -y upgrade || apt-get -qq -y upgrade 
+    apt-get -qq install -y git || apt-get -qq install -y --fix-missing git 
+    apt-get install -qq -y build-essential || apt-get -qq install -y --fix-missing build-essential
+    apt-get install -qq -y protobuf-compiler libprotoc-dev || apt-get install -qq -y --fix-missing protobuf-compiler libprotoc-dev 
+    apt-get install -qq -y libjansson-dev libbz2-dev || apt-get install -qq -y --fix-missing libjansson-dev libbz2-dev
+    apt-get install -qq -y libncurses5-dev || apt-get install -qq -y libncurses5-dev 
+    apt-get install -qq -y automake || apt-get install -qq -y automake 
+    apt-get install -qq -y libtool || apt-get install -qq -y libtool 
+    apt-get install -qq -y jq || apt-get install -qq -y jq 
+    apt-get install -qq -y rs || apt-get install -qq -y rs 
+    apt-get install -qq -y samtools || apt-get install -qq -y samtools 
+    apt-get install -qq -y curl unzip || apt-get install -qq -y curl unzip 
+    apt-get install -qq -y cmake || apt-get install -qq -y cmake
+    apt-get install -qq -y redland-utils librdf-dev || apt-get install -qq -y redland-utils librdf-dev 
+    apt-get install -qq -y pkg-config || apt-get install -qq -y pkg-config 
+    apt-get install -qq -y wget || apt-get install -qq -y wget 
+    apt-get install -qq -y bc || apt-get install -qq -y bc 
+    apt-get install -qq -y gtk-doc-tools || apt-get install -qq -y gtk-doc-tools 
+    apt-get install -qq -y raptor2-utils || apt-get install -qq -y raptor2-utils 
+    apt-get install -qq -y rasqal-utils || apt-get install -qq -y rasqal-utils 
+    apt-get install -qq -y bison || apt-get install -qq -y bison 
+    apt-get install -qq -y flex || apt-get install -qq -y flex 
+    apt-get install -qq -y gawk || apt-get install -qq -y gawk 
+    apt-get install -qq -y libgoogle-perftools-dev || apt-get install -qq -y libgoogle-perftools-dev 
+    apt-get install -qq -y liblz4-dev liblzma-dev || apt-get install -qq -y liblz4-dev liblzma-dev 
+    apt-get install -qq -y libcairo2-dev libpixman-1-dev || apt-get install -qq -y libcairo2-dev libpixman-1-dev 
+    apt-get install -qq -y libffi-dev || apt-get install -qq -y libffi-dev 
+    apt-get install -qq -y libcairo-dev || apt-get install -qq -y libcairo-dev 
+    apt-get install -qq -y libprotobuf-dev || apt-get install -qq -y libprotobuf-dev
     git clone --recursive https://github.com/vgteam/vg.git && \
         cd vg && \
         . ./source_me.sh && \
-        make && \ 
-        make install
+        make 
 
 %environment
-    export PATH=$PATH:/hal2vg:/hal2vg/deps/hal/bin:$PATH
+    export PATH=/vg/bin:$PATH
