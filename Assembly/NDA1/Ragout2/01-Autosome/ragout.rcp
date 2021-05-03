@@ -1,0 +1,14 @@
+
+#References and target genomes/species
+.references = hereford,angus,brahman
+.target = ndama
+
+#HAL alignment input. Sequences will be extracted from the alignment
+.maf = alignment.maf
+.blocks = large
+
+# Fasta files to use for assembly
+hereford.fasta = hereford.fasta
+ndama.fasta = ndama.fasta
+angus.fasta = angus.fasta
+brahman.fasta = brahman.fasta
