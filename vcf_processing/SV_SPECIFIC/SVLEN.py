@@ -16,14 +16,21 @@ def main():
     except:
         filt = None
     
+    line1=0
+    line2=0
+    line3=0
+
     for n,line in enumerate(opn):
         if "##" in line: 
+            if "##FORMAT=<ID=SVLEN" in line: line1=1
+            if "##FORMAT=<ID=END" in line: line2=1
+            if "##FORMAT=<ID=CIEND" in line: line3=1
             print(line.strip())
             continue
         elif "#" in line and "##" not in line:
-            print('''##FORMAT=<ID=SVLEN,Number=1,Type=Integer,Description="Difference in length between REF and ALT alleles">''')
-            print('''##FORMAT=<ID=END,Number=1,Type=Integer,Description="End position of the variant described in this record">''')
-            print('''##FORMAT=<ID=CIEND,Number=2,Type=Integer,Description="Breakpoint uncertainty for END">''')
+            if not line1: print('''##FORMAT=<ID=SVLEN,Number=1,Type=Integer,Description="Difference in length between REF and ALT alleles">''')
+            if not line2: print('''##FORMAT=<ID=END,Number=1,Type=Integer,Description="End position of the variant described in this record">''')
+            if not line3: print('''##FORMAT=<ID=CIEND,Number=2,Type=Integer,Description="Breakpoint uncertainty for END">''')
             print(line.strip())
             continue
         line = line.strip().split()
@@ -39,9 +46,18 @@ def main():
             CI = sorted( [i-END for i in BPEs] )
             CIEND = ','.join( [ str( CI[0] ), str( CI[-1] ) ] )
         SVLEN=','.join(SVLENs)
-        line[7] = "{};SVLEN={}".format( line[7], SVLEN )
-        line[7] = "{};END={}".format( line[7], str(END) )
-        line[7] = "{};CIEND={}".format( line[7], CIEND )
+        infofield = line[7].split(';')
+        presentSVL=0
+        presentCI=0
+        presentED=0
+        for n,f in enumerate(infofield):
+            if "SVLEN=" in f: infofield[n] = "SVLEN={}".format( SVLEN ); presentSVL=1
+            if "END=" in f: infofield[n] = "END={}".format( END ); presentED=1
+            if "CIEND=" in f: infofield[n] = "CIEND={}".format( CIEND ); presentCI=1
+        line[7] = ';'.join(infofield)
+        if not presentSVL: line[7] = "{};SVLEN={}".format( line[7], SVLEN )
+        if not presentED: line[7] = "{};END={}".format( line[7], str(END) )
+        if not presentCI: line[7] = "{};CIEND={}".format( line[7], CIEND )
         print('\t'.join(line))
 if __name__ == "__main__":
     main()
