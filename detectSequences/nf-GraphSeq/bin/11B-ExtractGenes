@@ -29,7 +29,7 @@ def import_abinitio(indata):
     for line in open(indata):
         if "# start gene" in line:
             skip = 0
-            feat = line.strip().split()[-1]
+            feat = line.strip().split('\t')[-1]
             features[feat] = {"features":[], "sequence": ""}
             continue
         if "# end gene" in line:
@@ -39,7 +39,7 @@ def import_abinitio(indata):
             continue
         if not skip:
             if "#" not in line:
-                features[feat]["features"].append( line.strip().split() ) 
+                features[feat]["features"].append( line.strip().split('\t') ) 
             elif "# protein sequence" in line:
                 isprot = 1
                 features[feat]["sequence"] += line.strip().replace('# protein sequence = [','').replace(']','')
