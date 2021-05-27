@@ -29,7 +29,9 @@ for ( var_type in unique(mydata$TYPE) ){
         scale_y_continuous() +
         theme(axis.text.x = element_text(angle=90, hjust=1)) +
         labs(x="Sample", y="Allelic Balance", fill = "Method", title = paste("Allelic balance by method used")) + 
-        facet_wrap(~ALGORITHM)
+        facet_wrap(~ALGORITHM) +
+        theme_classic(base_size = 18) +
+        ggpubr::rotate_x_text(angle = 90)
     ggsave(paste("PLOTS/ABviolin_WGS_",var_type,".pdf", sep = ""), plot = p,device = "pdf", height = 9, width = 16)
     rm(allABs)
 }
