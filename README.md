@@ -38,3 +38,6 @@ Script for processing the ATAC-seq results generated through [bagpipe](https://b
 
 # Detect non-reference sequence
 Non-reference sequence can be detected using the nextflow workflow included in `detectSequences/nf-GraohSeq`. The workflow requires nextflow to be installed.
+
+# Citation
+```Andrea Talenti, Jessica Powell, Johanneke D Hemmink, Elizabeth AJ Cook, David Wragg, Siddharth Jayaraman, Edith Paxton, Chukwunonso Ezeasor, Emmanuel T Obishakin, Ebere R Agusi, Abdulfatai Tijjani, Karen Marshall, Andressa Fisch, Beatriz Ferreira, Ali Qasim, Umer N Chaudhry, Pamela Wiener, Philip Toye, Liam J Morrison, Timothy Connelley, James Prendergast. A cattle graph genome incorporating global breed diversity. bioRxiv 2021.06.23.449389; doi: https://doi.org/10.1101/2021.06.23.449389```
