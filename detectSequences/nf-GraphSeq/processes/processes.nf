@@ -64,8 +64,8 @@ process get_gaps {
 
     script:
     """
-    faToTwoBit GENOMES/${i}.masked.fa GENOMES/${i}.masked.2bit
-    twoBitInfo -nBed ${pooled_genomes} stdout | \
+    faToTwoBit ${pooled_genomes} ${pooled_genomes.simpleName}.2bit
+    twoBitInfo -nBed ${pooled_genomes.simpleName}.2bit stdout | \
         awk -v var=${params.gap_flanks} 'BEGIN{OFS="\t"}; \$2-var < 0{print \$1,"0",\$3+var}; \$2-var >= 0{print \$1,\$2-var,\$3+var}' | \
         bedSort stdin gaps.bed
     """
@@ -345,7 +345,7 @@ process make_diamond_db {
 }
 
 process blastx {
-    lab "diamond_bx"
+    tag "diamond_bx"
     label "large"
     publishDir "${params.outfolder}/07-predict/07A-blastx", mode: 'symlink'
 
@@ -393,11 +393,10 @@ process abinitio {
     """
 }
 
-
 process abinitio_flank {
     tag "augustus_flank"
     label "large"
-    publishDir "${params.outfolder}/07-predict/07C-flanked_augustus", mode: 'symlink'
+    publishDir "${params.outfolder}/07-predict/07B-augustus", mode: 'symlink'
 
     input:
     path fasta
@@ -412,8 +411,8 @@ process abinitio_flank {
     script:
     """
     name=`basename -s '.fa' ${fasta}`
-    augustus --species=human ${fasta} > \${name}.flank.abInitio.gff
-    11B-ExtractGenes -i \${name}.flank.abInitio.gff -o \${name}.flank.abInitio
+    augustus --species=human ${fasta} > \${name}.abInitio.flank.gff
+    11B-ExtractGenes -i \${name}.abInitio.flank.gff -o \${name}.abInitio.flank
     """
 }
 

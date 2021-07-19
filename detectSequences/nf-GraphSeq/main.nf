@@ -1,17 +1,19 @@
 #!/usr/bin/env nextflow
-enable.nextflow.enable.dsl=2
+nextflow.enable.dsl=2
 
 // Log informations
 log.info """\
 Non-ref sequence   v 0.5a 
 ================================
 PG                         : $params.pg
+Reference genome           : $params.reference
 Sequence pool              : $params.genome_pool
 Contigs IDs                : $params.contigs
 Scaffolds IDs              : $params.scaffolds
 Autosomes' repetitiveness  : $params.repetitiveness
 Proteins fasta             : $params.proteins
 Flanking regions           : $params.flank
+Gaps flanking regions      : $params.gap_flank
 """
 
 // Evaluate input files
@@ -28,8 +30,8 @@ include {get_gaps; add_support_vector; add_gap_info} from './processes/processes
 include {combine_regions; frc_filter; label_regions} from './processes/processes.nf'
 include {get_repetitiveness; cleanup} from './processes/processes.nf'
 include {selfalign; simplify; getfasta; getfasta_flanked} from './processes/processes.nf'
-include {make_diamond_db; blastx} from './processes/processes.nf'
-include {abinitio; abinitio_flank; blastx} from './processes/processes.nf'
+include {make_diamond_db; blastx; bedToFasta} from './processes/processes.nf'
+include {abinitio; abinitio_flank} from './processes/processes.nf'
 include {filter_abinitio; filter_abinitio_flank} from './processes/processes.nf'
 include {consolidate} from './processes/processes.nf'
 
@@ -74,7 +76,7 @@ workflow {
     cleanup( get_repetitiveness.out, ch_rep )
 
     // Generate candidate fasta
-    bedToFasta( cleanup.out )
+    bedToFasta( cleanup.out[0] )
 
     // Self-alignments to identify redundancies
     selfalign( bedToFasta.out )
@@ -83,15 +85,15 @@ workflow {
     simplify( bedToFasta.out, selfalign.out )
 
     // Make new fastas, plain and flanked
-    getfasta( simplify.out, ch_pool )
-    getfasta_flanked( simplify.out, ch_pool )
+    getfasta( simplify.out[0], ch_pool )
+    getfasta_flanked( simplify.out[1], ch_pool )
 
     // Run blastx for protein identification
     blastx( getfasta.out, make_diamond_db.out )
 
     // Run augustus for protein identification
-    abinitio( getfasta.out )
-    filter_abinitio( abinitio_flank.out[1], abinitio_flank.out[2], make_diamond_db.out, ch_proteins )
+    abinitio( getfasta.out[0] )
+    filter_abinitio( abinitio.out[1], abinitio.out[2], make_diamond_db.out, ch_proteins )
 
     // Run augustus for protein identification on flanked sequences
     abinitio_flank( getfasta_flanked.out[0] )
