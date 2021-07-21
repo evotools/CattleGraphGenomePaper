@@ -13,7 +13,7 @@ Scaffolds IDs              : $params.scaffolds
 Autosomes' repetitiveness  : $params.repetitiveness
 Proteins fasta             : $params.proteins
 Flanking regions           : $params.flank
-Gaps flanking regions      : $params.gap_flank
+Gaps flanking regions      : $params.gap_flanks
 """
 
 // Evaluate input files
