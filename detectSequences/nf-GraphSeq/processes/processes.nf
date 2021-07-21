@@ -339,7 +339,7 @@ process make_diamond_db {
 
     script:
     """
-    diamond makedb -d mydb ${fasta}
+    diamond makedb -d mydb --in ${fasta}
     """
 
 }
