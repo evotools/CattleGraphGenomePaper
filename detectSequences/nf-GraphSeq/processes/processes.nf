@@ -67,13 +67,13 @@ process get_gaps {
     faToTwoBit ${pooled_genomes} ${pooled_genomes.simpleName}.2bit
     twoBitInfo -nBed ${pooled_genomes.simpleName}.2bit stdout | \
         awk -v var=${params.gap_flanks} 'BEGIN{OFS="\t"}; \$2-var < 0{print \$1,"0",\$3+var}; \$2-var >= 0{print \$1,\$2-var,\$3+var}' | \
-        bedSort stdin gaps.bed
+        bedtools sort -i - > gaps.bed
     """
 }
 
 
 process add_gap_info {
-    label "small_long"
+    label "medium"
     tag "supp_vec"
     publishDir "${params.outfolder}/01-filter_nmers", mode: 'symlink'
 
@@ -83,18 +83,18 @@ process add_gap_info {
 
     output:
     path "*.labeled.bed"
-    path "*.pdf"
-    path "*.log"
+    // path "*.pdf"
+    // path "*.log"
 
     script:
     """
-    bname=`basename -s '.bed' $with_support`
-    02-ClassifyNodes -i ${with_support} -o \$bname
-    bedtools intersect -a \${bname}.noNmers.bed -b ${gaps} -v | awk 'BEGIN{OFS="\t"};{print \$0, "0"}' > \${bname}.noOverlaps.bed
-    bedtools intersect -a \${bname}.noNmers.bed -b ${gaps} -u | awk 'BEGIN{OFS="\t"};{print \$0, "1"}' > \${bname}.Overlaps.bed
-    cat \${bname}.noOverlaps.bed \${bname}.Overlaps.bed | bedSort stdin \${bname}.labeled.bed && \
-        rm \${bname}.noOverlaps.bed \${bname}.Overlaps.bed
-    04B-nodesStats \${bname}.labeled.bed upsetPlot.no_Nmers > upsetPlot.no_Nmers.log
+    bname=`basename -s '.bed' ${with_support}`
+    03-ProcessNmers -i ${with_support} -o ${with_support.simpleName}
+    bedtools intersect -a ${with_support.simpleName}.noNmers.bed -b ${gaps} -v | awk 'BEGIN{OFS="\t"};{print \$0, "0"}' > ${with_support.simpleName}.noOverlaps.bed
+    bedtools intersect -a ${with_support.simpleName}.noNmers.bed -b ${gaps} -u | awk 'BEGIN{OFS="\t"};{print \$0, "1"}' > ${with_support.simpleName}.Overlaps.bed
+    cat ${with_support.simpleName}.noOverlaps.bed ${with_support.simpleName}.Overlaps.bed | bedtools sort -i - > ${with_support.simpleName}.labeled.bed && \
+        rm ${with_support.simpleName}.noOverlaps.bed ${with_support.simpleName}.Overlaps.bed
+    # 04B-nodeStats ${with_support.simpleName}.labeled.bed upsetPlot.no_Nmers > upsetPlot.no_Nmers.log
     """
 }
 
@@ -115,7 +115,7 @@ process frc_filter {
     """
     bname=`basename -s '.bed' $intervals`
     bedtools intersect -a $intervals -b $frc -v | awk 'BEGIN{OFS="\t"};{print \$0}' > \${bname}.no_frc.bed    
-    04B-nodesStats \${bname}.no_frc.bed upsetPlot.no_Nmers.no_frc > upsetPlot.no_Nmers.no_frc.log
+    # 04B-nodesStats \${bname}.no_frc.bed upsetPlot.no_Nmers.no_frc > upsetPlot.no_Nmers.no_frc.log
     """
 }
 
@@ -136,7 +136,7 @@ process combine_regions {
 
     # Example of header
     # Add region lengths
-    awk 'BEGIN{OFS="\t"};{print \$0, \$3-\$2}' \$intervals > \${oname}.lengths.bed
+    awk 'BEGIN{OFS="\t"};{print \$0, \$3-\$2}' $intervals > \${oname}.lengths.bed
     # Create output header
     echo | awk 'BEGIN{OFS="\t"};{print "SEQID","BPI","BPE","NODES","N_NODES","STRANDS","SEQS","N_CLOSE_TO_GAPS","NODES_LENGTH"}' > \${oname}.lengths.merged.bed
     # Perform region merging
@@ -181,7 +181,7 @@ process get_repetitiveness {
 
     # Extract upper-case sequences
     bedtools getfasta -fi ${sequences} -bed ${intervals} -tab 2> getfasta.err | \
-        python -c "import sys; [sys.stdout.write(f'{line.strip().split()[0]}\t{sum([int(c.islower()) for c in line.strip().split()[1]])}\t{len(line.strip().split()[1])}\t{line.strip().split()[1]}\n') for line in sys.stdin]" > regions.txt
+        python -c "import sys; [sys.stdout.write(f'{line.strip().split()[0]}\\t{sum([int(c.islower()) for c in line.strip().split()[1]])}\\t{len(line.strip().split()[1])}\\t{line.strip().split()[1]}\\n') for line in sys.stdin]" > regions.txt
     # Add info about masked bases and sequence in the region
     07B-combine ${intervals} regions.txt > \${bname}.masked.bed
     """
@@ -198,28 +198,28 @@ process cleanup {
 
     output:
     path "*.long.novel.noTelomere.noFlankGaps.lowrep.candidate.bed"
-    path "*.pdf"
-    path "*.log"
+    // path "*.pdf"
+    // path "*.log"
 
     script:
     """
     name=`basename -s '.bed' $intervals`
     awk 'NR==1 {print}; NR>1 && \$11~"LONG"{print}' ${intervals} > \${name}.long.bed
-    04B-nodesStats \${name}.long.bed upsetPlot.no_Nmers.no_frc.long > upsetPlot.no_Nmers.no_frc.long.log
+    # 04B-nodesStats \${name}.long.bed upsetPlot.no_Nmers.no_frc.long > upsetPlot.no_Nmers.no_frc.long.log
 
     awk -v val=${params.novelty_cutoff} 'NR==1{print};NR>1 && \$9/\$10>val {print}' \${name}.long.bed > \${name}.long.novel.bed
-    04B-nodesStats \${name}.long.novel.bed upsetPlot.no_Nmers.no_frc.long.novel > upsetPlot.no_Nmers.no_frc.long.novel.log
+    # 04B-nodesStats \${name}.long.novel.bed upsetPlot.no_Nmers.no_frc.long.novel > upsetPlot.no_Nmers.no_frc.long.novel.log
 
     awk 'NR==1{print};NR>1 && \$11!~"TELOMER"{print}' \${name}.long.novel.bed > \${name}.long.novel.noTelomere.bed
-    04B-nodesStats \${name}.long.novel.noTelomere.bed upsetPlot.no_Nmers.no_frc.long.noTelomere.novel > upsetPlot.no_Nmers.no_frc.long.novel.noTelomere.log
+    # 04B-nodesStats \${name}.long.novel.noTelomere.bed upsetPlot.no_Nmers.no_frc.long.noTelomere.novel > upsetPlot.no_Nmers.no_frc.long.novel.noTelomere.log
 
     awk 'NR==1{print};NR>1 && \$11!~"FLANK"{print}' \${name}.long.novel.noTelomere.bed > \${name}.long.novel.noTelomere.noFlankGaps.bed
-    04B-nodesStats \${name}.long.novel.noTelomere.noFlankGaps.bed upsetPlot.no_Nmers.no_frc.long.novel.noTelomere.noFlankGaps > upsetPlot.no_Nmers.no_frc.long.novel.noTelomere.noFlankGaps.log
+    # 04B-nodesStats \${name}.long.novel.noTelomere.noFlankGaps.bed upsetPlot.no_Nmers.no_frc.long.novel.noTelomere.noFlankGaps > upsetPlot.no_Nmers.no_frc.long.novel.noTelomere.noFlankGaps.log
 
     echo "" | awk 'BEGIN{OFS="\t"}; {print "SEQID", "BPI", "BPE", "NODES", "N_NODES", "STRANDS", "NODE_SEQUENCE", "N_CLOSE_TO_GAPS", "NODES_LENGTH", "REGION_SIZE", "CLASSIFICATION", "N_MASKED", "N_NT", "RATIO_MASKED", "ZSCORE", "PVAL", "SEQUENCE"}' > \${name}.long.novel.noTelomere.noFlankGaps.lowrep.candidate.bed
-    09A-FilterRepetitive \${name}.long.novel.noTelomere.noFlankGaps.lowrep.candidate.bed \
+    08A-FilterRepetitive \${name}.long.novel.noTelomere.noFlankGaps.lowrep.candidate.bed \
         ${repetitiveness} \${name}.long.novel.noTelomere.noFlankGaps.lowrep.candidate.bed
-    04B-nodesStats \${name}.long.novel.noTelomere.noFlankGaps.lowrep.candidate.bed upsetPlot.no_Nmers.no_frc.long.novel.noTelomere.noFlankGaps.lowrep > upsetPlot.no_Nmers.no_frc.long.novel.noTelomere.noFlankGaps.lowrep.log
+    # 04B-nodesStats \${name}.long.novel.noTelomere.noFlankGaps.lowrep.candidate.bed upsetPlot.no_Nmers.no_frc.long.novel.noTelomere.noFlankGaps.lowrep > upsetPlot.no_Nmers.no_frc.long.novel.noTelomere.noFlankGaps.lowrep.log
     """
 }
 
