@@ -1,0 +1,11 @@
+import sys
+
+def main():
+	for line in open(sys.argv[1]):
+		iid = line.strip().split()[0]
+		ctg = '_'.join( iid.split('_')[0:-1])
+		bpi, bpe = iid.split('_')[-1].split('-')
+		print( f'{ctg}\t{bpi}\t{bpe}' )
+
+if __name__ == "__main__":
+	main()
