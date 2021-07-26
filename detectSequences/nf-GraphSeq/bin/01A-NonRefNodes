@@ -87,7 +87,7 @@ def main():
     # Get query paths
     ## Get paths for query sequences
     print("Getting query paths")
-    query_path_handle = [ i for i in path_handle if args.reference_genome not in pg.get_path_name(i) ]
+    query_path_handle = [ i for i in path_handle if args.reference_genome not in pg.get_path_name(i) and '_MINIGRAPH_.' not in pg.get_path_name(i) ]
 
     # Get specific nodes:
     print("Getting query-specific nodes")
