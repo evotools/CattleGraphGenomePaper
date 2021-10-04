@@ -54,7 +54,7 @@ def main():
     support = [ tuple([ rename.get(name, name) for name in group.split(',') ]) for group in group_names ]
     scoring = upsetplot.from_memberships(support, data = values)
     scoring = scoring.sort_values(ascending = False)
-    upsetplot.plot(scoring, sort_by = "degree", )
+    upsetplot.plot(scoring, sort_by = "degree")
     pyplot.savefig(f"./{sys.argv[2]}.pdf", dpi = 300)
     return 0
 
