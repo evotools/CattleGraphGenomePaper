@@ -217,7 +217,7 @@ process cleanup {
     # 04B-nodesStats \${name}.long.novel.noTelomere.noFlankGaps.bed upsetPlot.no_Nmers.no_frc.long.novel.noTelomere.noFlankGaps > upsetPlot.no_Nmers.no_frc.long.novel.noTelomere.noFlankGaps.log
 
     echo "" | awk 'BEGIN{OFS="\t"}; {print "SEQID", "BPI", "BPE", "NODES", "N_NODES", "STRANDS", "NODE_SEQUENCE", "N_CLOSE_TO_GAPS", "NODES_LENGTH", "REGION_SIZE", "CLASSIFICATION", "N_MASKED", "N_NT", "RATIO_MASKED", "ZSCORE", "PVAL", "SEQUENCE"}' > \${name}.long.novel.noTelomere.noFlankGaps.lowrep.candidate.bed
-    08A-FilterRepetitive \${name}.long.novel.noTelomere.noFlankGaps.lowrep.candidate.bed \
+    08A-FilterRepetitive \${name}.long.novel.noTelomere.noFlankGaps.bed \
         ${repetitiveness} \${name}.long.novel.noTelomere.noFlankGaps.lowrep.candidate.bed
     # 04B-nodesStats \${name}.long.novel.noTelomere.noFlankGaps.lowrep.candidate.bed upsetPlot.no_Nmers.no_frc.long.novel.noTelomere.noFlankGaps.lowrep > upsetPlot.no_Nmers.no_frc.long.novel.noTelomere.noFlankGaps.lowrep.log
     """
@@ -235,7 +235,7 @@ process bedToFasta {
 
     script:
     """
-    python -c 'import sys; [sys.stdout.write( f">{line.strip().split()[0]}_{line.strip().split()[1]}-{line.strip().split()[2]}\n{line.strip().split()[-1]}\n" ) for line in open(sys.argv[1]) if "SEQID" not in line]' ${interval} > candidate.fa
+    python -c 'import sys; [sys.stdout.write( f">{line.strip().split()[0]}_{line.strip().split()[1]}-{line.strip().split()[2]}\\n{line.strip().split()[-1]}\\n" ) for line in open(sys.argv[1]) if "SEQID" not in line]' ${intervals} > candidate.fa
     samtools faidx candidate.fa
     """
 }
@@ -252,12 +252,12 @@ process selfalign {
 
     script:
     """
-    minimap2 -x asm5 -t ${task.cpus} --cs=long ${candidate} ${candidate} | \
+    minimap2 -x asm5 -t ${task.cpus} --cs=long ${candidates} ${candidates} | \
         paftools.js view -f maf - > alignments.maf
     maf_path=`which maf-convert`
     cp \${maf_path} ./maf_convert && 2to3 -n -o ${PWD} ./maf_convert && chmod a+x ./maf_convert 
     ./maf_convert blasttab alignments.maf > alignments.tmp
-    08B-AddScoresToBlast6 alignments.maf alignments.tmp > alignments.blasttab
+    09B-AddScoresToBlast6 alignments.maf alignments.tmp > alignments.blasttab
     """
 }
 
@@ -273,15 +273,11 @@ process simplify {
 
     output:
     path "candidate.clump.bed"
-    path "candidate.clump.flank${params.flank}.bed"
 
     script:
     """
-    08C-DetectDuplicateContigs ${alignments} ${fai} candidate.clump.txt
+    09C-DetectDuplicateContigs ${alignments} ${fai} candidate.clump.txt
     09D-faiToBed candidate.clump.txt > candidate.clump.bed
-    if [ ${params.flanks} ]; then 
-        awk -v var=${params.flanks} '\$2-var <=0 {print \$1, "0", \$3 + var}; \$2-var >0 {print \$1, \$2-var, \$3 + var}' > candidate.clump.flank${params.flank}.bed
-    fi 
     """
 }
 
@@ -322,7 +318,8 @@ process getfasta_flanked {
     script:
     """
     name=`basename -s '.bed' $intervals`
-    11F-addFlanks ${intervals} ${params.flanks} > \${name}.flank.bed
+    samtools faidx ${sequences}
+    11F-addFlanks ${intervals} ${params.flanks} ${sequences}.fai > \${name}.flank.bed
     bedtools getfasta -fi ${sequences} -bed \${name}.flank.bed -fo \${name}.flank.fa
     """
 }
@@ -359,9 +356,9 @@ process blastx {
     script:
     """
     diamond blastx -d ${protdb} \
-        -p ${tasks.cpus} -k 1 --more-sensitive \
+        -p ${task.cpus} -k 1 --more-sensitive \
         --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore scovhsp \
-        --evalue 1e-10 --id 80 -q ${intervals}.fa> candidates.clump.bx.aligned.ev1e-10.id80.tab
+        --evalue 1e-10 --id 80 -q ${intervals} > candidates.clump.bx.aligned.ev1e-10.id80.tab
     wc -l candidates.clump.bx.aligned.ev1e-10.id80.tab
 
     # Filter low-covered genes
@@ -487,14 +484,15 @@ process consolidate {
     publishDir "${params.outfolder}/08-consolidate", mode: 'symlink'
 
     input:
-    path blastx
     path augustus
     path augustus_flank
+    path blastx
 
-
+    output:
+    path "consolidated.bed"
 
     script:
     """
-
+    12-Consolidate ${augustus} ${augustus_flank} ${blastx} > consolidated.bed
     """
 }
