@@ -12,6 +12,13 @@ dependencies:
   - pip
   - wheel
   - graphviz
+  - ucsc-fatotwobit
+  - ucsc-twobitinfo
+  - upsetplot
+  - matplotlib
+  - pandas
+  - numpy
+  - minimap2
   - conda-forge::r-base<4
   - conda-forge::r-tidyverse=1.3.1
   - conda-forge::r-reshape2=1.4.4
