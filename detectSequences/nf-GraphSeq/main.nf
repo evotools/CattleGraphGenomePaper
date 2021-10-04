@@ -12,8 +12,9 @@ Contigs IDs                : $params.contigs
 Scaffolds IDs              : $params.scaffolds
 Autosomes' repetitiveness  : $params.repetitiveness
 Proteins fasta             : $params.proteins
-Flanking regions           : $params.flank
+Flanking regions           : $params.flanks
 Gaps flanking regions      : $params.gap_flanks
+Novelty cutoff (ratio)     : $params.novelty_cutoff
 """
 
 // Evaluate input files
@@ -86,7 +87,7 @@ workflow {
 
     // Make new fastas, plain and flanked
     getfasta( simplify.out[0], ch_pool )
-    getfasta_flanked( simplify.out[1], ch_pool )
+    getfasta_flanked( simplify.out[0], ch_pool )
 
     // Run blastx for protein identification
     blastx( getfasta.out, make_diamond_db.out )
