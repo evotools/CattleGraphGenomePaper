@@ -1,4 +1,4 @@
-# GraphGenomeScripts
+# GraphGenomeScripts [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5749432.svg)](https://doi.org/10.5281/zenodo.5749432)
 Scripts used for the graph genome indexing
 
 ## Running CACTUS
