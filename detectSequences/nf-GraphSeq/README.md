@@ -16,7 +16,7 @@ The workflow requires the following inputs:
 2. `--genome_pool`: A single fasta file with all the assemblies present in the graph genome, with the sequence naming in the format `GENOME.SEQUENCE`
 3. `--contigs`: list of short sequences in all the assemblies (same naming convention as the pooled fasta file)
 4. `--scaffolds`: list of scaffolded sequences in all the assemblies (i.e. the chromosomes of megabase-level fragments, same naming convention as the pooled fasta file)
-5. `--repetitiveness`: proportion of masked base in each sequence, in the format `SEQID\tBPmasked\tBPtot\tPercMasked`
+5. `--repetitiveness`: proportion of masked base in each sequence, in the format `SEQID\tBPmasked\tBPtot\tPercMasked` (for example by using the script [here](https://github.com/evotools/CattleGraphGenomePaper/blob/master/detectSequences/MAF_WORKFLOW/SCRIPTS/CountLowerCaseBases.py))
 6. `--reference` : name of the reference genome
 7. `--proteins`: file with the protein database used to align to the novel sequence
 8. `--flanks`: Flanking sequence to consider when predicting the gene elements with Augustus
