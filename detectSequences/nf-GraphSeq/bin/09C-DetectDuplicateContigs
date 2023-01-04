@@ -10,7 +10,8 @@ alignments = read.table(args[1])
 contigs = read.table(args[2])
 # Add concordance vector
 contigs$CONCORDANT = ""
-contigs = contigs %>% arrange(desc(V2))
+#contigs = contigs %>% arrange(desc(V2))
+contigs <- contigs[order(contigs[,2], decreasing = T), ]
 cat("Processing ", nrow(alignments), " for ", nrow(contigs), " contigs.\n" )
 
 # Add column names
